@@ -18,13 +18,20 @@ public class MainApplication {
 
 	// private static StorageQueueCrud storageQueueCrud = new StorageQueueCrud();
 
-	//private static ServiceBusTopicOperations serviceBusTopicOperations = new ServiceBusTopicOperations(
-	//		"RootManageSharedAccessKey", System.getenv("AZURE_SERVICE_BUS_KEY"), "az204servicebus2023",
-	//		"az204devtopic");
+	// private static ServiceBusTopicOperations serviceBusTopicOperations = new
+	// ServiceBusTopicOperations(
+	// "RootManageSharedAccessKey", System.getenv("AZURE_SERVICE_BUS_KEY"),
+	// "az204servicebus2023",
+	// "az204devtopic");
 
+	// private static ServiceBusQueueOperations serviceBusTopicOperations = new
+	// ServiceBusQueueOperations(
+	// "RootManageSharedAccessKey", System.getenv("AZURE_SERVICE_BUS_KEY"),
+	// "az204servicebus2023",
+	// "az204sbqueue");
 
 	public static void main(String[] args) throws InterruptedException {
-		
+
 	}
 
 	public static void copyFileFromOneContainerToAnother() {
