@@ -7,7 +7,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.IterableStream;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.messaging.servicebus.ServiceBusClientBuilder;
 import com.azure.messaging.servicebus.ServiceBusMessage;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessage;
@@ -19,6 +21,7 @@ import com.azure.messaging.servicebus.ServiceBusTransactionContext;
 import com.azure.messaging.servicebus.models.CompleteOptions;
 import com.azure.messaging.servicebus.models.ServiceBusReceiveMode;
 import com.azure.service.util.AzureUtil;
+import com.azure.service.util.Constants;
 
 import reactor.core.Disposable;
 
@@ -31,18 +34,30 @@ public class ServiceBusTopicOperations {
 	/*
 	 * construct ServiceBusTopicOperations object
 	 */
-	public ServiceBusTopicOperations(String keyName, String key, String nameSpace, String topicName) {
+	public ServiceBusTopicOperations(String keyName, String key, String nameSpace, String topicName,
+			String authenticationMethod) {
+		if (Constants.SAS.equalsIgnoreCase(authenticationMethod)) {
+			String sharedAccesskeyName = keyName;
+			String sharedAccesskey = key;
+			String uri = String.format("%s.servicebus.windows.net/%s", nameSpace, topicName);
 
-		String sharedAccesskeyName = keyName;
-		String sharedAccesskey = key;
-		String uri = String.format("%s.servicebus.windows.net/%s", nameSpace, topicName);
+			String sharedAccessSignature = AzureUtil.getSASToken(uri, sharedAccesskeyName, sharedAccesskey);
 
-		String sharedAccessSignature = AzureUtil.getSASToken(uri, sharedAccesskeyName, sharedAccesskey);
+			String connectionString = String.format("Endpoint=%s.servicebus.windows.net;SharedAccessSignature=%s",
+					nameSpace, sharedAccessSignature);
+			System.out.println("SAS Token:  " + connectionString);
+			this.serviceBusClientBuilder = new ServiceBusClientBuilder().connectionString(connectionString);
 
-		String connectionString = String.format("Endpoint=%s.servicebus.windows.net;SharedAccessSignature=%s",
-				nameSpace, sharedAccessSignature);
-		System.out.println("SAS Token:  " + connectionString);
-		this.serviceBusClientBuilder = new ServiceBusClientBuilder().connectionString(connectionString);
+		} else {
+			// using service principle for authentication
+			// It need AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_TENANT_ID for
+			// execution from env other than azure cloud
+			TokenCredential credential = new DefaultAzureCredentialBuilder().build();
+			String fullyQualifiedName = String.format("%s.servicebus.windows.net",nameSpace);
+			this.serviceBusClientBuilder = new ServiceBusClientBuilder()
+					.credential(fullyQualifiedName, credential);
+		}
+
 		this.topicName = topicName;
 	}
 
